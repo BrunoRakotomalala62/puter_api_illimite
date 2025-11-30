@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Puter AI API - Multi-Modeles + Vision</title>
+  <title>Puter AI API - Chat + Vision + Generation</title>
   <style>
     * {
       margin: 0;
@@ -37,13 +37,45 @@
       color: #333;
       margin-bottom: 8px;
       text-align: center;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
     }
     .subtitle {
       color: #666;
       text-align: center;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+    }
+    .mode-selector {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 12px 8px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      background: white;
+      color: #333;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.3s;
+      text-align: center;
+    }
+    .mode-btn:hover {
+      border-color: #667eea;
+      background: #f0f0ff;
+      color: #667eea;
+    }
+    .mode-btn.active {
+      border-color: #667eea;
+      background: #667eea;
+      color: white;
+    }
+    .mode-btn.generate.active {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-color: #f5576c;
     }
     .model-selector {
       margin-bottom: 15px;
@@ -53,11 +85,11 @@
       margin-bottom: 8px;
       font-weight: 600;
       color: #333;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     .model-selector select {
       width: 100%;
-      padding: 14px 15px;
+      padding: 12px 15px;
       border: 2px solid #e0e0e0;
       border-radius: 10px;
       font-size: 16px;
@@ -73,29 +105,6 @@
     .model-selector select:focus {
       outline: none;
       border-color: #667eea;
-    }
-    .model-categories {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-    .category-btn {
-      padding: 8px 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 20px;
-      background: white;
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.3s;
-      flex: 1;
-      min-width: fit-content;
-      text-align: center;
-    }
-    .category-btn:hover, .category-btn.active {
-      border-color: #667eea;
-      background: #667eea;
-      color: white;
     }
     .input-group {
       display: flex;
@@ -122,12 +131,19 @@
       border-radius: 10px;
       border: 2px dashed #764ba2;
     }
+    .image-section.generate-mode {
+      background: #fff0f5;
+      border-color: #f5576c;
+    }
     .image-section label {
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
       color: #764ba2;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+    }
+    .image-section.generate-mode label {
+      color: #f5576c;
     }
     .image-section input {
       width: 100%;
@@ -138,23 +154,26 @@
     }
     .image-preview img {
       max-width: 100%;
-      max-height: 150px;
+      max-height: 300px;
       border-radius: 8px;
       border: 2px solid #764ba2;
     }
-    .vision-badge {
+    .badge {
       display: inline-block;
       background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
       color: white;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      margin-left: 6px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      margin-left: 5px;
       vertical-align: middle;
+    }
+    .badge.generate {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     }
     button {
       width: 100%;
-      padding: 16px 30px;
+      padding: 14px 20px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
@@ -164,6 +183,9 @@
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
       -webkit-tap-highlight-color: transparent;
+    }
+    button.generate-btn {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     }
     button:hover {
       transform: translateY(-2px);
@@ -181,11 +203,11 @@
       background: #f8f9fa;
       border-radius: 10px;
       padding: 15px;
-      min-height: 100px;
+      min-height: 80px;
       white-space: pre-wrap;
       word-wrap: break-word;
       line-height: 1.6;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     .response.loading {
       display: flex;
@@ -193,13 +215,17 @@
       justify-content: center;
       color: #666;
     }
+    .response img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
     .model-info {
-      margin-top: 8px;
       margin-bottom: 15px;
-      padding: 10px 12px;
+      padding: 8px 12px;
       background: #e8f4fd;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12px;
       color: #0066cc;
     }
     .api-info {
@@ -211,42 +237,33 @@
     .api-info h3 {
       color: #333;
       margin-bottom: 10px;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
     .api-info p {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
     }
     .api-info code {
       background: #333;
       color: #0f0;
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 5px;
       display: block;
-      margin-top: 8px;
+      margin-top: 5px;
+      margin-bottom: 10px;
       overflow-x: auto;
-      font-size: 11px;
+      font-size: 10px;
       white-space: nowrap;
     }
-    .models-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
-      margin-top: 12px;
-    }
-    .model-badge {
-      padding: 6px 8px;
-      background: #667eea;
-      color: white;
-      border-radius: 6px;
-      font-size: 10px;
-      text-align: center;
-    }
-    .clear-image-btn {
+    .clear-btn {
       padding: 8px 15px;
       background: #dc3545;
-      font-size: 14px;
+      font-size: 12px;
       margin-top: 10px;
       width: auto;
+    }
+    .hidden {
+      display: none !important;
     }
 
     @media (min-width: 768px) {
@@ -255,18 +272,14 @@
         align-items: center;
       }
       .container {
-        max-width: 800px;
+        max-width: 700px;
         min-height: auto;
         border-radius: 20px;
-        padding: 40px;
+        padding: 30px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
       }
       h1 {
-        font-size: 2rem;
-      }
-      .subtitle {
-        font-size: 1rem;
-        margin-bottom: 30px;
+        font-size: 1.8rem;
       }
       .input-group {
         flex-direction: row;
@@ -277,90 +290,58 @@
       .input-group button {
         width: auto;
       }
-      .category-btn {
-        flex: 0;
-        padding: 8px 16px;
-      }
-      .models-grid {
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      }
-      .model-badge {
-        font-size: 12px;
-        padding: 8px 12px;
-      }
-      .api-info code {
-        font-size: 13px;
-      }
-      .response {
-        min-height: 120px;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .category-btn {
-        padding: 6px 8px;
-        font-size: 11px;
-      }
-      .models-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      h1 {
-        font-size: 1.5rem;
+      .mode-btn {
+        font-size: 14px;
+        padding: 12px 16px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Puter AI API <span class="vision-badge">+ Vision</span></h1>
-    <p class="subtitle">API gratuite et illimitee - 500+ modeles IA avec support images</p>
+    <h1>Puter AI API</h1>
+    <p class="subtitle">Chat + Vision + Generation d'images - 100% Gratuit</p>
     
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setMode('chat')">Chat IA</button>
+      <button class="mode-btn" onclick="setMode('vision')">Analyse Image</button>
+      <button class="mode-btn generate" onclick="setMode('generate')">Generer Image</button>
+    </div>
+
     <div class="model-selector">
-      <label>Choisir un modele IA:</label>
-      <div class="model-categories">
-        <button class="category-btn active" onclick="filterModels('all')">Tous</button>
-        <button class="category-btn" onclick="filterModels('openai')">OpenAI</button>
-        <button class="category-btn" onclick="filterModels('claude')">Claude</button>
-        <button class="category-btn" onclick="filterModels('gemini')">Gemini</button>
-        <button class="category-btn" onclick="filterModels('meta')">Llama</button>
-        <button class="category-btn" onclick="filterModels('other')">Autres</button>
-      </div>
+      <label id="modelLabel">Modele IA:</label>
       <select id="modelSelect" onchange="updateModelInfo()">
-        <optgroup label="OpenAI">
+        <optgroup label="OpenAI" id="openaiGroup">
           <option value="gpt-4.1-nano">GPT-4.1 Nano (rapide)</option>
-          <option value="gpt-4.1">GPT-4.1 (Vision)</option>
-          <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+          <option value="gpt-4.1">GPT-4.1</option>
           <option value="gpt-4o" selected>GPT-4o (Vision)</option>
-          <option value="gpt-4o-mini">GPT-4o Mini (Vision)</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
           <option value="o3-mini">O3 Mini</option>
           <option value="o4-mini">O4 Mini</option>
         </optgroup>
-        <optgroup label="Claude (Anthropic)">
-          <option value="claude-sonnet-4">Claude Sonnet 4 (Vision)</option>
-          <option value="claude-sonnet-4-5">Claude Sonnet 4.5 (Vision)</option>
-          <option value="claude-opus-4">Claude Opus 4 (Vision)</option>
-          <option value="claude-haiku-4-5">Claude Haiku 4.5 (rapide)</option>
+        <optgroup label="Claude (Anthropic)" id="claudeGroup">
+          <option value="claude-sonnet-4">Claude Sonnet 4</option>
+          <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
+          <option value="claude-opus-4">Claude Opus 4</option>
+          <option value="claude-haiku-4-5">Claude Haiku 4.5</option>
         </optgroup>
-        <optgroup label="Gemini (Google)">
-          <option value="gemini-2.5-flash">Gemini 2.5 Flash (Vision)</option>
-          <option value="gemini-2.5-pro">Gemini 2.5 Pro (Vision)</option>
-          <option value="gemini-2.0-flash">Gemini 2.0 Flash (Vision)</option>
+        <optgroup label="Gemini (Google)" id="geminiGroup">
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
         </optgroup>
-        <optgroup label="Meta / Llama">
-          <option value="meta-llama/llama-4-scout">Llama 4 Scout (Vision)</option>
-          <option value="meta-llama/llama-4-maverick">Llama 4 Maverick (Vision)</option>
-          <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+        <optgroup label="Meta Llama" id="llamaGroup">
+          <option value="meta-llama/llama-4-scout">Llama 4 Scout</option>
+          <option value="meta-llama/llama-4-maverick">Llama 4 Maverick</option>
         </optgroup>
-        <optgroup label="Autres modeles">
-          <option value="grok-3">Grok 3 (xAI)</option>
-          <option value="grok-3-mini">Grok 3 Mini</option>
+        <optgroup label="Autres" id="otherGroup">
+          <option value="grok-3">Grok 3</option>
           <option value="deepseek-chat">DeepSeek Chat</option>
-          <option value="deepseek-reasoner">DeepSeek Reasoner</option>
           <option value="mistral-large-latest">Mistral Large</option>
-          <option value="mistral-small-latest">Mistral Small</option>
-          <option value="amazon-nova-pro">Amazon Nova Pro</option>
-          <option value="amazon-nova-lite">Amazon Nova Lite</option>
         </optgroup>
+      </select>
+      <select id="imageModelSelect" class="hidden">
+        <option value="gpt-image-1" selected>GPT Image 1</option>
+        <option value="dall-e-3">DALL-E 3</option>
       </select>
     </div>
     
@@ -368,14 +349,14 @@
       Modele: <strong>GPT-4o - Multimodal avec Vision</strong>
     </div>
 
-    <div class="image-section">
-      <label>URL de l'image (optionnel):</label>
+    <div class="image-section hidden" id="imageSection">
+      <label id="imageSectionLabel">URL de l'image a analyser:</label>
       <input type="url" id="imageUrl" placeholder="https://exemple.com/image.jpg" oninput="previewImage()">
       <div class="image-preview" id="imagePreview"></div>
     </div>
     
     <div class="input-group">
-      <input type="text" id="prompt" placeholder="Entrez votre message..." value="Decrivez cette image en detail">
+      <input type="text" id="prompt" placeholder="Entrez votre message...">
       <button id="sendBtn" onclick="sendMessage()">Envoyer</button>
     </div>
     
@@ -384,72 +365,111 @@
     </div>
     
     <div class="api-info">
-      <h3>Utilisation de l'API</h3>
-      <p>Texte seul:</p>
+      <h3>API Endpoints</h3>
+      <p>Chat:</p>
       <code>GET /puter?prompt=message&model=gpt-4o</code>
-      <p style="margin-top: 12px;">Analyse d'image:</p>
+      <p>Vision (analyse image):</p>
       <code>GET /puter?prompt=...&model=gpt-4o&image_url=URL</code>
-      <p style="margin-top: 12px; font-size: 13px;">
-        <strong>Modeles Vision:</strong>
-      </p>
-      <div class="models-grid">
-        <span class="model-badge">GPT-4o</span>
-        <span class="model-badge">Claude</span>
-        <span class="model-badge">Gemini</span>
-        <span class="model-badge">Llama 4</span>
-        <span class="model-badge">Grok 3</span>
-        <span class="model-badge">DeepSeek</span>
-        <span class="model-badge">Mistral</span>
-        <span class="model-badge">+500</span>
-      </div>
+      <p>Generation image:</p>
+      <code>GET /generate?prompt=description&model=gpt-image-1</code>
     </div>
   </div>
 
   <script src="https://js.puter.com/v2/"></script>
   <script>
+    let currentMode = 'chat';
+
     const modelDescriptions = {
       'gpt-4.1-nano': 'GPT-4.1 Nano - Rapide',
-      'gpt-4.1': 'GPT-4.1 - Puissant avec Vision',
-      'gpt-4.1-mini': 'GPT-4.1 Mini - Equilibre',
+      'gpt-4.1': 'GPT-4.1 - Puissant',
       'gpt-4o': 'GPT-4o - Multimodal avec Vision',
-      'gpt-4o-mini': 'GPT-4o Mini - Leger avec Vision',
+      'gpt-4o-mini': 'GPT-4o Mini - Leger',
       'o3-mini': 'O3 Mini - Raisonnement',
       'o4-mini': 'O4 Mini - Raisonnement',
-      'claude-sonnet-4': 'Claude Sonnet 4 - Code et Vision',
-      'claude-sonnet-4-5': 'Claude Sonnet 4.5 - Ameliore',
-      'claude-opus-4': 'Claude Opus 4 - Le plus puissant',
-      'claude-haiku-4-5': 'Claude Haiku 4.5 - Tres rapide',
-      'gemini-2.5-flash': 'Gemini 2.5 Flash - Rapide',
-      'gemini-2.5-pro': 'Gemini 2.5 Pro - Pro',
-      'gemini-2.0-flash': 'Gemini 2.0 Flash - Multimodal',
-      'meta-llama/llama-4-scout': 'Llama 4 Scout - Vision',
-      'meta-llama/llama-4-maverick': 'Llama 4 Maverick - Avance',
-      'meta-llama/llama-3.3-70b-instruct': 'Llama 3.3 70B - Puissant',
+      'claude-sonnet-4': 'Claude Sonnet 4',
+      'claude-sonnet-4-5': 'Claude Sonnet 4.5',
+      'claude-opus-4': 'Claude Opus 4 - Puissant',
+      'claude-haiku-4-5': 'Claude Haiku 4.5 - Rapide',
+      'gemini-2.5-flash': 'Gemini 2.5 Flash',
+      'gemini-2.5-pro': 'Gemini 2.5 Pro',
+      'meta-llama/llama-4-scout': 'Llama 4 Scout',
+      'meta-llama/llama-4-maverick': 'Llama 4 Maverick',
       'grok-3': 'Grok 3 - xAI',
-      'grok-3-mini': 'Grok 3 Mini - Leger',
       'deepseek-chat': 'DeepSeek Chat',
-      'deepseek-reasoner': 'DeepSeek Reasoner',
       'mistral-large-latest': 'Mistral Large',
-      'mistral-small-latest': 'Mistral Small',
-      'amazon-nova-pro': 'Amazon Nova Pro',
-      'amazon-nova-lite': 'Amazon Nova Lite'
+      'gpt-image-1': 'GPT Image 1 - Generation',
+      'dall-e-3': 'DALL-E 3 - Generation HD'
     };
 
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      const imageSection = document.getElementById('imageSection');
+      const modelSelect = document.getElementById('modelSelect');
+      const imageModelSelect = document.getElementById('imageModelSelect');
+      const sendBtn = document.getElementById('sendBtn');
+      const prompt = document.getElementById('prompt');
+      const modelLabel = document.getElementById('modelLabel');
+      const imageSectionLabel = document.getElementById('imageSectionLabel');
+      
+      if (mode === 'chat') {
+        imageSection.classList.add('hidden');
+        imageSection.classList.remove('generate-mode');
+        modelSelect.classList.remove('hidden');
+        imageModelSelect.classList.add('hidden');
+        sendBtn.classList.remove('generate-btn');
+        sendBtn.textContent = 'Envoyer';
+        prompt.placeholder = 'Entrez votre message...';
+        modelLabel.textContent = 'Modele IA:';
+      } else if (mode === 'vision') {
+        imageSection.classList.remove('hidden');
+        imageSection.classList.remove('generate-mode');
+        modelSelect.classList.remove('hidden');
+        imageModelSelect.classList.add('hidden');
+        sendBtn.classList.remove('generate-btn');
+        sendBtn.textContent = 'Analyser';
+        prompt.placeholder = 'Question sur l\'image...';
+        prompt.value = 'Decrivez cette image en detail';
+        modelLabel.textContent = 'Modele Vision:';
+        imageSectionLabel.textContent = 'URL de l\'image a analyser:';
+      } else if (mode === 'generate') {
+        imageSection.classList.remove('hidden');
+        imageSection.classList.add('generate-mode');
+        modelSelect.classList.add('hidden');
+        imageModelSelect.classList.remove('hidden');
+        sendBtn.classList.add('generate-btn');
+        sendBtn.textContent = 'Generer';
+        prompt.placeholder = 'Decrivez l\'image a generer...';
+        prompt.value = 'Un chat mignon avec des lunettes de soleil';
+        modelLabel.textContent = 'Modele Generation:';
+        imageSectionLabel.textContent = 'Image generee:';
+        document.getElementById('imageUrl').value = '';
+        document.getElementById('imagePreview').innerHTML = '';
+      }
+      
+      updateModelInfo();
+    }
+
     function updateModelInfo() {
-      const select = document.getElementById('modelSelect');
-      const model = select.value;
+      const model = currentMode === 'generate' 
+        ? document.getElementById('imageModelSelect').value 
+        : document.getElementById('modelSelect').value;
       const info = document.getElementById('modelInfo');
       info.innerHTML = 'Modele: <strong>' + (modelDescriptions[model] || model) + '</strong>';
     }
 
     function previewImage() {
+      if (currentMode === 'generate') return;
+      
       const imageUrl = document.getElementById('imageUrl').value;
       const previewDiv = document.getElementById('imagePreview');
       
       if (imageUrl) {
         previewDiv.innerHTML = `
           <img src="${imageUrl}" onerror="this.parentElement.innerHTML='<p style=\\'color:#dc3545;\\'>Image non trouvee</p>'" alt="Apercu">
-          <br><button class="clear-image-btn" onclick="clearImage()">Effacer</button>
+          <br><button class="clear-btn" onclick="clearImage()">Effacer</button>
         `;
       } else {
         previewDiv.innerHTML = '';
@@ -461,37 +481,8 @@
       document.getElementById('imagePreview').innerHTML = '';
     }
 
-    function filterModels(category) {
-      document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      const select = document.getElementById('modelSelect');
-      const optgroups = select.querySelectorAll('optgroup');
-      
-      optgroups.forEach(group => {
-        const label = group.label.toLowerCase();
-        if (category === 'all') {
-          group.style.display = '';
-        } else if (category === 'openai' && label.includes('openai')) {
-          group.style.display = '';
-        } else if (category === 'claude' && label.includes('claude')) {
-          group.style.display = '';
-        } else if (category === 'gemini' && label.includes('gemini')) {
-          group.style.display = '';
-        } else if (category === 'meta' && label.includes('meta')) {
-          group.style.display = '';
-        } else if (category === 'other' && label.includes('autres')) {
-          group.style.display = '';
-        } else {
-          group.style.display = 'none';
-        }
-      });
-    }
-
     async function sendMessage() {
       const prompt = document.getElementById('prompt').value;
-      const model = document.getElementById('modelSelect').value;
-      const imageUrl = document.getElementById('imageUrl').value;
       const responseDiv = document.getElementById('response');
       const sendBtn = document.getElementById('sendBtn');
       
@@ -503,33 +494,56 @@
       sendBtn.disabled = true;
       responseDiv.className = 'response loading';
       
-      if (imageUrl) {
-        responseDiv.textContent = 'Analyse de l\'image...';
-      } else {
-        responseDiv.textContent = 'Chargement...';
-      }
-      
       try {
-        let response;
-        
-        if (imageUrl) {
-          response = await puter.ai.chat(prompt, imageUrl, { model: model });
-        } else {
-          response = await puter.ai.chat(prompt, { model: model });
-        }
-        
-        responseDiv.className = 'response';
-        
-        if (typeof response === 'string') {
-          responseDiv.textContent = response;
-        } else if (response.message && response.message.content) {
-          if (Array.isArray(response.message.content)) {
-            responseDiv.textContent = response.message.content.map(c => c.text || c).join('\n');
-          } else {
-            responseDiv.textContent = response.message.content;
+        if (currentMode === 'generate') {
+          const model = document.getElementById('imageModelSelect').value;
+          responseDiv.textContent = 'Generation de l\'image en cours...';
+          
+          const imageElement = await puter.ai.txt2img(prompt, { model: model });
+          
+          responseDiv.className = 'response';
+          responseDiv.innerHTML = '';
+          responseDiv.appendChild(imageElement);
+          
+          document.getElementById('imagePreview').innerHTML = '';
+          document.getElementById('imagePreview').appendChild(imageElement.cloneNode(true));
+          
+        } else if (currentMode === 'vision') {
+          const model = document.getElementById('modelSelect').value;
+          const imageUrl = document.getElementById('imageUrl').value;
+          
+          if (!imageUrl) {
+            responseDiv.className = 'response';
+            responseDiv.textContent = 'Veuillez entrer l\'URL d\'une image a analyser.';
+            sendBtn.disabled = false;
+            return;
           }
+          
+          responseDiv.textContent = 'Analyse de l\'image...';
+          
+          // Format messages array pour compatibilite avec tous les modeles (Claude, GPT, etc.)
+          const messages = [
+            {
+              role: "user",
+              content: [
+                { type: "text", text: prompt },
+                { type: "image_url", image_url: { url: imageUrl } }
+              ]
+            }
+          ];
+          const response = await puter.ai.chat(messages, { model: model });
+          
+          responseDiv.className = 'response';
+          displayResponse(response, responseDiv);
+          
         } else {
-          responseDiv.textContent = JSON.stringify(response, null, 2);
+          const model = document.getElementById('modelSelect').value;
+          responseDiv.textContent = 'Chargement...';
+          
+          const response = await puter.ai.chat(prompt, { model: model });
+          
+          responseDiv.className = 'response';
+          displayResponse(response, responseDiv);
         }
       } catch (error) {
         responseDiv.className = 'response';
@@ -543,19 +557,41 @@
         } else if (error) {
           errorMsg = JSON.stringify(error);
         }
-        responseDiv.textContent = 'Erreur: ' + errorMsg + '\n\nConseil: Essayez un autre modele ou verifiez l\'URL de l\'image.';
+        responseDiv.textContent = 'Erreur: ' + errorMsg + '\n\nConseil: Essayez un autre modele.';
       } finally {
         sendBtn.disabled = false;
       }
     }
 
+    function displayResponse(response, responseDiv) {
+      if (typeof response === 'string') {
+        responseDiv.textContent = response;
+      } else if (response.message && response.message.content) {
+        if (Array.isArray(response.message.content)) {
+          responseDiv.textContent = response.message.content.map(c => c.text || c).join('\n');
+        } else {
+          responseDiv.textContent = response.message.content;
+        }
+      } else {
+        responseDiv.textContent = JSON.stringify(response, null, 2);
+      }
+    }
+
+    document.getElementById('imageModelSelect').addEventListener('change', updateModelInfo);
+    
     const urlParams = new URLSearchParams(window.location.search);
+    const modeParam = urlParams.get('mode');
     const promptParam = urlParams.get('prompt');
     const modelParam = urlParams.get('model');
     const imageUrlParam = urlParams.get('image_url');
     
+    if (modeParam) {
+      const modeBtn = document.querySelector(`.mode-btn[onclick*="${modeParam}"]`);
+      if (modeBtn) modeBtn.click();
+    }
     if (modelParam) {
       document.getElementById('modelSelect').value = modelParam;
+      document.getElementById('imageModelSelect').value = modelParam;
       updateModelInfo();
     }
     if (imageUrlParam) {
@@ -564,7 +600,6 @@
     }
     if (promptParam) {
       document.getElementById('prompt').value = promptParam;
-      sendMessage();
     }
   </script>
 </body>

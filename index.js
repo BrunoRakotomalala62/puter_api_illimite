@@ -31,6 +31,20 @@ app.get('/puter', (req, res) => {
   res.redirect(redirectUrl);
 });
 
+app.get('/generate', (req, res) => {
+  const prompt = req.query.prompt || 'A beautiful landscape';
+  const model = req.query.model || 'gpt-image-1';
+  const uid = req.query.uid || '';
+  
+  let redirectUrl = `/generate.html?prompt=${encodeURIComponent(prompt)}&model=${encodeURIComponent(model)}`;
+  
+  if (uid) {
+    redirectUrl += `&uid=${encodeURIComponent(uid)}`;
+  }
+  
+  res.redirect(redirectUrl);
+});
+
 app.get('/html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'api.html'));
 });
@@ -38,27 +52,24 @@ app.get('/html', (req, res) => {
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
-    message: 'API Puter.js gratuite et illimitee - Support Vision/Images',
+    message: 'API Puter.js - Chat + Vision + Generation d\'images',
     endpoints: {
-      'GET /puter?prompt=message&model=...': 'Texte seul - Retourne JSON',
-      'GET /puter?prompt=message&model=...&image_url=URL': 'Analyse d\'image - Retourne JSON',
-      'GET /puter?prompt=message&model=...&image_url=URL&uid=ID': 'Avec identifiant unique',
-      'GET /html?prompt=message': 'Page HTML avec interface Puter',
-      'GET /': 'Page d\'accueil avec selecteur de modeles'
+      'GET /': 'Interface complete',
+      'GET /puter?prompt=...&model=...': 'Chat IA - JSON',
+      'GET /puter?prompt=...&model=...&image_url=URL': 'Analyse image - JSON',
+      'GET /generate?prompt=...&model=gpt-image-1': 'Generation image',
+      'GET /api/status': 'Status API'
     },
-    vision_models: [
-      'gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 
-      'claude-sonnet-4', 'claude-opus-4',
-      'gemini-2.5-flash', 'gemini-2.5-pro',
-      'meta-llama/llama-4-scout', 'meta-llama/llama-4-maverick'
-    ],
+    chat_models: ['gpt-4o', 'gpt-4.1-nano', 'claude-sonnet-4', 'gemini-2.5-flash'],
+    vision_models: ['gpt-4o', 'claude-sonnet-4', 'gemini-2.5-flash', 'meta-llama/llama-4-scout'],
+    image_models: ['gpt-image-1', 'dall-e-3'],
     timestamp: new Date().toISOString()
   });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
-  console.log(`API JSON endpoint: GET /puter?prompt=votre_message`);
-  console.log(`API Vision endpoint: GET /puter?prompt=decrivez&image_url=URL`);
-  console.log(`Status endpoint: GET /api/status`);
+  console.log(`Chat/Vision: GET /puter?prompt=...`);
+  console.log(`Image Gen: GET /generate?prompt=...`);
+  console.log(`Status: GET /api/status`);
 });

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puter AI - Generation d'image</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .prompt-display {
+      background: #f8f0ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    .prompt-display strong {
+      color: #f5576c;
+    }
+    .loading {
+      color: #666;
+      font-style: italic;
+      padding: 40px;
+    }
+    .image-result {
+      margin-top: 20px;
+    }
+    .image-result img {
+      max-width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .error {
+      color: #dc3545;
+      padding: 20px;
+      background: #ffe6e6;
+      border-radius: 10px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #f5576c;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .json-output {
+      margin-top: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: left;
+      font-family: monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Generation d'image</h1>
+    <div class="prompt-display">
+      <strong>Prompt:</strong> <span id="promptText"></span><br>
+      <strong>Modele:</strong> <span id="modelText"></span>
+    </div>
+    <div id="result">
+      <div class="loading">Generation de l'image en cours...</div>
+    </div>
+    <div id="jsonOutput" class="json-output" style="display:none;"></div>
+    <a href="/" class="back-link">Retour a l'accueil</a>
+  </div>
+
+  <script src="https://js.puter.com/v2/"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const prompt = urlParams.get('prompt') || 'A beautiful landscape';
+    const model = urlParams.get('model') || 'gpt-image-1';
+    const uid = urlParams.get('uid') || '';
+
+    document.getElementById('promptText').textContent = prompt;
+    document.getElementById('modelText').textContent = model;
+
+    async function generateImage() {
+      const resultDiv = document.getElementById('result');
+      const jsonOutput = document.getElementById('jsonOutput');
+
+      try {
+        const imageElement = await puter.ai.txt2img(prompt, { model: model });
+        
+        resultDiv.innerHTML = '<div class="image-result"></div>';
+        resultDiv.querySelector('.image-result').appendChild(imageElement);
+
+        const jsonData = {
+          success: true,
+          model: model,
+          prompt: prompt,
+          uid: uid || null,
+          image_generated: true,
+          timestamp: new Date().toISOString()
+        };
+        jsonOutput.style.display = 'block';
+        jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
+
+      } catch (error) {
+        let errorMsg = 'Une erreur est survenue';
+        if (error && error.message) {
+          errorMsg = error.message;
+        } else if (error && typeof error === 'string') {
+          errorMsg = error;
+        } else if (error) {
+          errorMsg = JSON.stringify(error);
+        }
+
+        resultDiv.innerHTML = '<div class="error">Erreur: ' + errorMsg + '</div>';
+
+        const jsonData = {
+          success: false,
+          model: model,
+          prompt: prompt,
+          uid: uid || null,
+          error: errorMsg,
+          timestamp: new Date().toISOString()
+        };
+        jsonOutput.style.display = 'block';
+        jsonOutput.textContent = JSON.stringify(jsonData, null, 2);
+      }
+    }
+
+    generateImage();
+  </script>
+</body>
+</html>
