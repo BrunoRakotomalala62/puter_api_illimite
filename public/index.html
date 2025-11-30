@@ -548,16 +548,23 @@
       } catch (error) {
         responseDiv.className = 'response';
         let errorMsg = 'Une erreur est survenue';
-        if (error && error.message) {
-          errorMsg = error.message;
-        } else if (error && typeof error === 'string') {
-          errorMsg = error;
-        } else if (error && error.error) {
-          errorMsg = error.error;
-        } else if (error) {
-          errorMsg = JSON.stringify(error);
+        
+        // Fonction pour extraire le message d'erreur
+        function extractErrorMessage(err) {
+          if (!err) return 'Erreur inconnue';
+          if (typeof err === 'string') return err;
+          if (err.message && typeof err.message === 'string') return err.message;
+          if (err.error) {
+            if (typeof err.error === 'string') return err.error;
+            if (err.error.message) return err.error.message;
+            return JSON.stringify(err.error);
+          }
+          if (err.code) return 'Code erreur: ' + err.code;
+          return JSON.stringify(err);
         }
-        responseDiv.textContent = 'Erreur: ' + errorMsg + '\n\nConseil: Essayez un autre modele.';
+        
+        errorMsg = extractErrorMessage(error);
+        responseDiv.textContent = 'Erreur: ' + errorMsg + '\n\nConseil: Essayez un autre modele ou verifiez l\'URL de l\'image.';
       } finally {
         sendBtn.disabled = false;
       }
