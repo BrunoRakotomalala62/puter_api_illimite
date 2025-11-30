@@ -521,13 +521,34 @@
           
           responseDiv.textContent = 'Analyse de l\'image...';
           
-          // Format messages array pour compatibilite avec tous les modeles (Claude, GPT, etc.)
+          // Detecter le type de modele pour adapter le format
+          const isClaudeModel = model.toLowerCase().includes('claude');
+          const isGeminiModel = model.toLowerCase().includes('gemini');
+          
+          let imageContent;
+          if (isClaudeModel) {
+            // Format Claude: utilise type "image" avec source URL
+            imageContent = {
+              type: "image",
+              source: {
+                type: "url",
+                url: imageUrl
+              }
+            };
+          } else {
+            // Format OpenAI/Gemini: utilise type "image_url"
+            imageContent = {
+              type: "image_url",
+              image_url: { url: imageUrl }
+            };
+          }
+          
           const messages = [
             {
               role: "user",
               content: [
                 { type: "text", text: prompt },
-                { type: "image_url", image_url: { url: imageUrl } }
+                imageContent
               ]
             }
           ];
