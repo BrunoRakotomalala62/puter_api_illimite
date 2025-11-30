@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Puter AI API - Multi-Modeles + Vision</title>
   <style>
     * {
@@ -10,51 +10,65 @@
       padding: 0;
       box-sizing: border-box;
     }
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 20px;
+      padding: 0;
     }
     .container {
       background: white;
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 800px;
       width: 100%;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding: 20px;
+      overflow-y: auto;
     }
     h1 {
       color: #333;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       text-align: center;
+      font-size: 1.8rem;
     }
     .subtitle {
       color: #666;
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
     }
     .model-selector {
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     .model-selector label {
       display: block;
       margin-bottom: 8px;
       font-weight: 600;
       color: #333;
+      font-size: 0.95rem;
     }
     .model-selector select {
       width: 100%;
-      padding: 12px 15px;
+      padding: 14px 15px;
       border: 2px solid #e0e0e0;
       border-radius: 10px;
       font-size: 16px;
       background: white;
       cursor: pointer;
       transition: border-color 0.3s;
+      -webkit-appearance: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
     }
     .model-selector select:focus {
       outline: none;
@@ -63,17 +77,20 @@
     .model-categories {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 15px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
     .category-btn {
-      padding: 8px 16px;
+      padding: 8px 12px;
       border: 2px solid #e0e0e0;
       border-radius: 20px;
       background: white;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
       transition: all 0.3s;
+      flex: 1;
+      min-width: fit-content;
+      text-align: center;
     }
     .category-btn:hover, .category-btn.active {
       border-color: #667eea;
@@ -82,12 +99,13 @@
     }
     .input-group {
       display: flex;
+      flex-direction: column;
       gap: 10px;
       margin-bottom: 15px;
     }
     input[type="text"], input[type="url"] {
-      flex: 1;
-      padding: 15px 20px;
+      width: 100%;
+      padding: 14px 16px;
       border: 2px solid #e0e0e0;
       border-radius: 10px;
       font-size: 16px;
@@ -98,17 +116,18 @@
       border-color: #667eea;
     }
     .image-section {
-      margin-bottom: 20px;
-      padding: 15px;
+      margin-bottom: 15px;
+      padding: 12px;
       background: #f8f0ff;
       border-radius: 10px;
       border: 2px dashed #764ba2;
     }
     .image-section label {
       display: block;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-weight: 600;
       color: #764ba2;
+      font-size: 0.9rem;
     }
     .image-section input {
       width: 100%;
@@ -119,7 +138,7 @@
     }
     .image-preview img {
       max-width: 100%;
-      max-height: 200px;
+      max-height: 150px;
       border-radius: 8px;
       border: 2px solid #764ba2;
     }
@@ -129,22 +148,29 @@
       color: white;
       padding: 4px 10px;
       border-radius: 12px;
-      font-size: 12px;
-      margin-left: 8px;
+      font-size: 11px;
+      margin-left: 6px;
+      vertical-align: middle;
     }
     button {
-      padding: 15px 30px;
+      width: 100%;
+      padding: 16px 30px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       border: none;
       border-radius: 10px;
       font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
+      -webkit-tap-highlight-color: transparent;
     }
     button:hover {
       transform: translateY(-2px);
       box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    button:active {
+      transform: translateY(0);
     }
     button:disabled {
       opacity: 0.6;
@@ -154,11 +180,12 @@
     .response {
       background: #f8f9fa;
       border-radius: 10px;
-      padding: 20px;
-      min-height: 120px;
+      padding: 15px;
+      min-height: 100px;
       white-space: pre-wrap;
       word-wrap: break-word;
       line-height: 1.6;
+      font-size: 0.95rem;
     }
     .response.loading {
       display: flex;
@@ -167,45 +194,51 @@
       color: #666;
     }
     .model-info {
-      margin-top: 10px;
-      padding: 10px 15px;
+      margin-top: 8px;
+      margin-bottom: 15px;
+      padding: 10px 12px;
       background: #e8f4fd;
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 13px;
       color: #0066cc;
     }
     .api-info {
-      margin-top: 30px;
-      padding: 20px;
+      margin-top: 20px;
+      padding: 15px;
       background: #f0f0f0;
       border-radius: 10px;
     }
     .api-info h3 {
       color: #333;
       margin-bottom: 10px;
+      font-size: 1rem;
+    }
+    .api-info p {
+      font-size: 0.85rem;
     }
     .api-info code {
       background: #333;
       color: #0f0;
-      padding: 10px 15px;
+      padding: 8px 12px;
       border-radius: 5px;
       display: block;
-      margin-top: 10px;
+      margin-top: 8px;
       overflow-x: auto;
-      font-size: 13px;
+      font-size: 11px;
+      white-space: nowrap;
     }
     .models-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-      margin-top: 15px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 12px;
     }
     .model-badge {
-      padding: 8px 12px;
+      padding: 6px 8px;
       background: #667eea;
       color: white;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 10px;
       text-align: center;
     }
     .clear-image-btn {
@@ -213,6 +246,67 @@
       background: #dc3545;
       font-size: 14px;
       margin-top: 10px;
+      width: auto;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding: 20px;
+        align-items: center;
+      }
+      .container {
+        max-width: 800px;
+        min-height: auto;
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .subtitle {
+        font-size: 1rem;
+        margin-bottom: 30px;
+      }
+      .input-group {
+        flex-direction: row;
+      }
+      .input-group input {
+        flex: 1;
+      }
+      .input-group button {
+        width: auto;
+      }
+      .category-btn {
+        flex: 0;
+        padding: 8px 16px;
+      }
+      .models-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      }
+      .model-badge {
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+      .api-info code {
+        font-size: 13px;
+      }
+      .response {
+        min-height: 120px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .category-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+      .models-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
@@ -228,7 +322,7 @@
         <button class="category-btn" onclick="filterModels('openai')">OpenAI</button>
         <button class="category-btn" onclick="filterModels('claude')">Claude</button>
         <button class="category-btn" onclick="filterModels('gemini')">Gemini</button>
-        <button class="category-btn" onclick="filterModels('meta')">Meta/Llama</button>
+        <button class="category-btn" onclick="filterModels('meta')">Llama</button>
         <button class="category-btn" onclick="filterModels('other')">Autres</button>
       </div>
       <select id="modelSelect" onchange="updateModelInfo()">
@@ -271,7 +365,7 @@
     </div>
     
     <div class="model-info" id="modelInfo">
-      Modele: <strong>GPT-4o - Dernier modele OpenAI multimodal avec Vision</strong>
+      Modele: <strong>GPT-4o - Multimodal avec Vision</strong>
     </div>
 
     <div class="image-section">
@@ -281,7 +375,7 @@
     </div>
     
     <div class="input-group">
-      <input type="text" id="prompt" placeholder="Entrez votre message ou 'Decrivez cette image'..." value="Decrivez cette image en detail">
+      <input type="text" id="prompt" placeholder="Entrez votre message..." value="Decrivez cette image en detail">
       <button id="sendBtn" onclick="sendMessage()">Envoyer</button>
     </div>
     
@@ -291,22 +385,22 @@
     
     <div class="api-info">
       <h3>Utilisation de l'API</h3>
-      <p>Endpoint GET - Texte seul:</p>
-      <code>GET /puter?prompt=message&model=claude-sonnet-4</code>
-      <p style="margin-top: 15px;">Endpoint GET - Analyse d'image:</p>
-      <code>GET /puter?prompt=decrivez&model=gpt-4o&image_url=https://...&uid=123</code>
-      <p style="margin-top: 15px; font-size: 14px;">
-        <strong>Modeles avec Vision:</strong>
+      <p>Texte seul:</p>
+      <code>GET /puter?prompt=message&model=gpt-4o</code>
+      <p style="margin-top: 12px;">Analyse d'image:</p>
+      <code>GET /puter?prompt=...&model=gpt-4o&image_url=URL</code>
+      <p style="margin-top: 12px; font-size: 13px;">
+        <strong>Modeles Vision:</strong>
       </p>
       <div class="models-grid">
         <span class="model-badge">GPT-4o</span>
-        <span class="model-badge">Claude Sonnet</span>
-        <span class="model-badge">Gemini 2.5</span>
+        <span class="model-badge">Claude</span>
+        <span class="model-badge">Gemini</span>
         <span class="model-badge">Llama 4</span>
         <span class="model-badge">Grok 3</span>
         <span class="model-badge">DeepSeek</span>
         <span class="model-badge">Mistral</span>
-        <span class="model-badge">+ 500 autres</span>
+        <span class="model-badge">+500</span>
       </div>
     </div>
   </div>
@@ -314,31 +408,31 @@
   <script src="https://js.puter.com/v2/"></script>
   <script>
     const modelDescriptions = {
-      'gpt-4.1-nano': 'GPT-4.1 Nano - Rapide et efficace pour les taches simples',
-      'gpt-4.1': 'GPT-4.1 - Modele OpenAI puissant avec Vision',
-      'gpt-4.1-mini': 'GPT-4.1 Mini - Equilibre vitesse/qualite',
-      'gpt-4o': 'GPT-4o - Dernier modele OpenAI multimodal avec Vision',
-      'gpt-4o-mini': 'GPT-4o Mini - Version legere avec Vision',
-      'o3-mini': 'O3 Mini - Modele de raisonnement OpenAI',
-      'o4-mini': 'O4 Mini - Nouveau modele de raisonnement',
-      'claude-sonnet-4': 'Claude Sonnet 4 - Excellent pour le code et Vision',
-      'claude-sonnet-4-5': 'Claude Sonnet 4.5 - Version amelioree avec Vision',
-      'claude-opus-4': 'Claude Opus 4 - Le plus puissant avec Vision',
-      'claude-haiku-4-5': 'Claude Haiku 4.5 - Tres rapide, ideal pour le chat',
-      'gemini-2.5-flash': 'Gemini 2.5 Flash - Rapide et multimodal avec Vision',
-      'gemini-2.5-pro': 'Gemini 2.5 Pro - Version professionnelle avec Vision',
-      'gemini-2.0-flash': 'Gemini 2.0 Flash - Multimodal avec Vision',
-      'meta-llama/llama-4-scout': 'Llama 4 Scout - Nouveau modele Meta avec Vision',
-      'meta-llama/llama-4-maverick': 'Llama 4 Maverick - Version avancee avec Vision',
-      'meta-llama/llama-3.3-70b-instruct': 'Llama 3.3 70B - Tres puissant open source',
-      'grok-3': 'Grok 3 - Modele xAI avec humour',
-      'grok-3-mini': 'Grok 3 Mini - Version legere de Grok',
-      'deepseek-chat': 'DeepSeek Chat - Excellent rapport qualite/prix',
-      'deepseek-reasoner': 'DeepSeek Reasoner - Specialise raisonnement',
-      'mistral-large-latest': 'Mistral Large - Modele francais puissant',
-      'mistral-small-latest': 'Mistral Small - Rapide et efficace',
-      'amazon-nova-pro': 'Amazon Nova Pro - Modele AWS professionnel',
-      'amazon-nova-lite': 'Amazon Nova Lite - Version legere AWS'
+      'gpt-4.1-nano': 'GPT-4.1 Nano - Rapide',
+      'gpt-4.1': 'GPT-4.1 - Puissant avec Vision',
+      'gpt-4.1-mini': 'GPT-4.1 Mini - Equilibre',
+      'gpt-4o': 'GPT-4o - Multimodal avec Vision',
+      'gpt-4o-mini': 'GPT-4o Mini - Leger avec Vision',
+      'o3-mini': 'O3 Mini - Raisonnement',
+      'o4-mini': 'O4 Mini - Raisonnement',
+      'claude-sonnet-4': 'Claude Sonnet 4 - Code et Vision',
+      'claude-sonnet-4-5': 'Claude Sonnet 4.5 - Ameliore',
+      'claude-opus-4': 'Claude Opus 4 - Le plus puissant',
+      'claude-haiku-4-5': 'Claude Haiku 4.5 - Tres rapide',
+      'gemini-2.5-flash': 'Gemini 2.5 Flash - Rapide',
+      'gemini-2.5-pro': 'Gemini 2.5 Pro - Pro',
+      'gemini-2.0-flash': 'Gemini 2.0 Flash - Multimodal',
+      'meta-llama/llama-4-scout': 'Llama 4 Scout - Vision',
+      'meta-llama/llama-4-maverick': 'Llama 4 Maverick - Avance',
+      'meta-llama/llama-3.3-70b-instruct': 'Llama 3.3 70B - Puissant',
+      'grok-3': 'Grok 3 - xAI',
+      'grok-3-mini': 'Grok 3 Mini - Leger',
+      'deepseek-chat': 'DeepSeek Chat',
+      'deepseek-reasoner': 'DeepSeek Reasoner',
+      'mistral-large-latest': 'Mistral Large',
+      'mistral-small-latest': 'Mistral Small',
+      'amazon-nova-pro': 'Amazon Nova Pro',
+      'amazon-nova-lite': 'Amazon Nova Lite'
     };
 
     function updateModelInfo() {
@@ -355,7 +449,7 @@
       if (imageUrl) {
         previewDiv.innerHTML = `
           <img src="${imageUrl}" onerror="this.parentElement.innerHTML='<p style=\\'color:#dc3545;\\'>Image non trouvee</p>'" alt="Apercu">
-          <br><button class="clear-image-btn" onclick="clearImage()">Effacer l'image</button>
+          <br><button class="clear-image-btn" onclick="clearImage()">Effacer</button>
         `;
       } else {
         previewDiv.innerHTML = '';
@@ -410,9 +504,9 @@
       responseDiv.className = 'response loading';
       
       if (imageUrl) {
-        responseDiv.textContent = 'Analyse de l\'image avec ' + model + '...';
+        responseDiv.textContent = 'Analyse de l\'image...';
       } else {
-        responseDiv.textContent = 'Chargement avec ' + model + '...';
+        responseDiv.textContent = 'Chargement...';
       }
       
       try {
