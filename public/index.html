@@ -521,38 +521,8 @@
           
           responseDiv.textContent = 'Analyse de l\'image...';
           
-          // Detecter le type de modele pour adapter le format
-          const isClaudeModel = model.toLowerCase().includes('claude');
-          const isGeminiModel = model.toLowerCase().includes('gemini');
-          
-          let imageContent;
-          if (isClaudeModel) {
-            // Format Claude: utilise type "image" avec source URL
-            imageContent = {
-              type: "image",
-              source: {
-                type: "url",
-                url: imageUrl
-              }
-            };
-          } else {
-            // Format OpenAI/Gemini: utilise type "image_url"
-            imageContent = {
-              type: "image_url",
-              image_url: { url: imageUrl }
-            };
-          }
-          
-          const messages = [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: prompt },
-                imageContent
-              ]
-            }
-          ];
-          const response = await puter.ai.chat(messages, { model: model });
+          // Format simplifie Puter.js: chat(prompt, imageUrl, options)
+          const response = await puter.ai.chat(prompt, imageUrl, { model: model });
           
           responseDiv.className = 'response';
           displayResponse(response, responseDiv);
