@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puter AI API - JSON</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body><script src="https://js.puter.com/v2/"></script><script>
+const urlParams = new URLSearchParams(window.location.search);
+const prompt = urlParams.get('prompt') || 'Bonjour';
+const model = urlParams.get('model') || 'gpt-4.1-nano';
+
+(async function() {
+  try {
+    const response = await puter.ai.chat(prompt, { model: model });
+    
+    let responseText = '';
+    if (typeof response === 'string') {
+      responseText = response;
+    } else if (response.message && response.message.content) {
+      if (Array.isArray(response.message.content)) {
+        responseText = response.message.content.map(c => c.text || c).join('\n');
+      } else {
+        responseText = response.message.content;
+      }
+    } else {
+      responseText = JSON.stringify(response);
+    }
+    
+    const jsonData = {
+      success: true,
+      model: model,
+      prompt: prompt,
+      response: responseText,
+      timestamp: new Date().toISOString()
+    };
+    document.body.textContent = JSON.stringify(jsonData, null, 2);
+  } catch (error) {
+    const jsonData = {
+      success: false,
+      model: model,
+      prompt: prompt,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    };
+    document.body.textContent = JSON.stringify(jsonData, null, 2);
+  }
+})();
+</script></body>
+</html>
