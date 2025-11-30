@@ -28,17 +28,8 @@ const uid = urlParams.get('uid') || '';
     let response;
     
     if (image_url) {
-      // Pour l'analyse d'image, utiliser le format messages pour plus de compatibilite
-      const messages = [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            { type: "image_url", image_url: { url: image_url } }
-          ]
-        }
-      ];
-      response = await puter.ai.chat(messages, { model: model });
+      // Format simplifie Puter.js: chat(prompt, imageUrl, options)
+      response = await puter.ai.chat(prompt, image_url, { model: model });
     } else {
       response = await puter.ai.chat(prompt, { model: model });
     }
