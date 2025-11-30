@@ -75,3 +75,22 @@ Reponse:
 
 ## Note
 Puter.js fonctionne cote client. C'est 100% gratuit - aucune cle API requise.
+
+## Replit Environment Setup (November 30, 2025)
+
+### Configuration Complete
+- **Workflow**: Configured to run `npm start` on port 5000 with webview output
+- **Dependencies**: All npm packages installed (express, cors, @heyputer/puter.js)
+- **Deployment**: Configured for autoscale deployment
+- **Server**: Binds to 0.0.0.0:5000 for proper Replit proxy support
+
+### Development
+- Run `npm start` to start the development server
+- Access the application through the Replit webview
+- Server automatically configured for Replit's proxy environment
+
+### Architecture
+- **Frontend**: Static HTML/CSS/JS files served from `/public`
+- **Backend**: Express.js server for routing and serving static files
+- **AI Integration**: Client-side Puter.js library handles all AI requests
+- **No API keys required**: Puter.js is completely free and unlimited
