@@ -20,10 +20,18 @@
 const urlParams = new URLSearchParams(window.location.search);
 const prompt = urlParams.get('prompt') || 'Bonjour';
 const model = urlParams.get('model') || 'gpt-4.1-nano';
+const image_url = urlParams.get('image_url') || '';
+const uid = urlParams.get('uid') || '';
 
 (async function() {
   try {
-    const response = await puter.ai.chat(prompt, { model: model });
+    let response;
+    
+    if (image_url) {
+      response = await puter.ai.chat(prompt, image_url, { model: model });
+    } else {
+      response = await puter.ai.chat(prompt, { model: model });
+    }
     
     let responseText = '';
     if (typeof response === 'string') {
@@ -42,6 +50,8 @@ const model = urlParams.get('model') || 'gpt-4.1-nano';
       success: true,
       model: model,
       prompt: prompt,
+      image_url: image_url || null,
+      uid: uid || null,
       response: responseText,
       timestamp: new Date().toISOString()
     };
@@ -51,6 +61,8 @@ const model = urlParams.get('model') || 'gpt-4.1-nano';
       success: false,
       model: model,
       prompt: prompt,
+      image_url: image_url || null,
+      uid: uid || null,
       error: error.message,
       timestamp: new Date().toISOString()
     };

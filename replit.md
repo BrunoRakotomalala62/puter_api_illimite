@@ -1,23 +1,23 @@
-# Puter AI API - Multi-Modeles
+# Puter AI API - Multi-Modeles + Vision
 
 ## Overview
-API gratuite et illimitee utilisant Puter.js avec acces a 500+ modeles IA (GPT, Claude, Gemini, Llama, etc.). Aucune cle API requise.
+API gratuite et illimitee utilisant Puter.js avec acces a 500+ modeles IA (GPT, Claude, Gemini, Llama, etc.). Support complet pour l'analyse d'images (Vision). Aucune cle API requise.
 
 ## Project Structure
 ```
 ├── index.js              # Serveur Express principal
 ├── package.json          # Dependances Node.js
 ├── public/
-│   ├── index.html        # Interface avec selecteur de modeles
+│   ├── index.html        # Interface avec selecteur de modeles + Vision
 │   ├── api.html          # Page de reponse HTML
-│   └── api-json.html     # Page de reponse JSON
+│   └── api-json.html     # Page de reponse JSON avec support images
 └── replit.md             # Documentation du projet
 ```
 
 ## API Endpoints
 
 ### GET /puter?prompt=message&model=model_name
-Endpoint principal - retourne la reponse en JSON.
+Endpoint texte - retourne la reponse en JSON.
 - **prompt**: Le message a envoyer a l'IA
 - **model**: Le modele a utiliser (optionnel, defaut: gpt-4.1-nano)
 
@@ -26,13 +26,27 @@ Exemple:
 GET /puter?prompt=Bonjour&model=claude-sonnet-4
 ```
 
+### GET /puter?prompt=message&model=model_name&image_url=URL&uid=ID
+Endpoint Vision/Image - analyse une image et retourne JSON.
+- **prompt**: Le message/question sur l'image
+- **model**: Le modele a utiliser (recommande: gpt-4o, claude-sonnet-4, gemini-2.5-flash)
+- **image_url**: URL de l'image a analyser
+- **uid**: Identifiant unique optionnel pour le tracking
+
+Exemple:
+```
+GET /puter?prompt=Decrivez cette image&model=gpt-4o&image_url=https://example.com/photo.jpg&uid=user123
+```
+
 Reponse:
 ```json
 {
   "success": true,
-  "model": "claude-sonnet-4",
-  "prompt": "Bonjour",
-  "response": "Bonjour ! Comment puis-je vous aider ?",
+  "model": "gpt-4o",
+  "prompt": "Decrivez cette image",
+  "image_url": "https://example.com/photo.jpg",
+  "uid": "user123",
+  "response": "Cette image montre...",
   "timestamp": "2025-11-30T17:00:00.000Z"
 }
 ```

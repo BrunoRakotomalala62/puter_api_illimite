@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Puter AI API - Multi-Modeles</title>
+  <title>Puter AI API - Multi-Modeles + Vision</title>
   <style>
     * {
       margin: 0;
@@ -23,7 +23,7 @@
       background: white;
       border-radius: 20px;
       padding: 40px;
-      max-width: 700px;
+      max-width: 800px;
       width: 100%;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     }
@@ -83,9 +83,9 @@
     .input-group {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
-    input[type="text"] {
+    input[type="text"], input[type="url"] {
       flex: 1;
       padding: 15px 20px;
       border: 2px solid #e0e0e0;
@@ -93,9 +93,44 @@
       font-size: 16px;
       transition: border-color 0.3s;
     }
-    input[type="text"]:focus {
+    input[type="text"]:focus, input[type="url"]:focus {
       outline: none;
       border-color: #667eea;
+    }
+    .image-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f0ff;
+      border-radius: 10px;
+      border: 2px dashed #764ba2;
+    }
+    .image-section label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #764ba2;
+    }
+    .image-section input {
+      width: 100%;
+    }
+    .image-preview {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .image-preview img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      border: 2px solid #764ba2;
+    }
+    .vision-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-left: 8px;
     }
     button {
       padding: 15px 30px;
@@ -173,12 +208,18 @@
       font-size: 12px;
       text-align: center;
     }
+    .clear-image-btn {
+      padding: 8px 15px;
+      background: #dc3545;
+      font-size: 14px;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Puter AI API</h1>
-    <p class="subtitle">API gratuite et illimitee - 500+ modeles IA</p>
+    <h1>Puter AI API <span class="vision-badge">+ Vision</span></h1>
+    <p class="subtitle">API gratuite et illimitee - 500+ modeles IA avec support images</p>
     
     <div class="model-selector">
       <label>Choisir un modele IA:</label>
@@ -193,27 +234,27 @@
       <select id="modelSelect" onchange="updateModelInfo()">
         <optgroup label="OpenAI">
           <option value="gpt-4.1-nano">GPT-4.1 Nano (rapide)</option>
-          <option value="gpt-4.1">GPT-4.1</option>
+          <option value="gpt-4.1">GPT-4.1 (Vision)</option>
           <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="gpt-4o" selected>GPT-4o (Vision)</option>
+          <option value="gpt-4o-mini">GPT-4o Mini (Vision)</option>
           <option value="o3-mini">O3 Mini</option>
           <option value="o4-mini">O4 Mini</option>
         </optgroup>
         <optgroup label="Claude (Anthropic)">
-          <option value="claude-sonnet-4">Claude Sonnet 4</option>
-          <option value="claude-sonnet-4-5">Claude Sonnet 4.5</option>
-          <option value="claude-opus-4">Claude Opus 4</option>
+          <option value="claude-sonnet-4">Claude Sonnet 4 (Vision)</option>
+          <option value="claude-sonnet-4-5">Claude Sonnet 4.5 (Vision)</option>
+          <option value="claude-opus-4">Claude Opus 4 (Vision)</option>
           <option value="claude-haiku-4-5">Claude Haiku 4.5 (rapide)</option>
         </optgroup>
         <optgroup label="Gemini (Google)">
-          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash (Vision)</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro (Vision)</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash (Vision)</option>
         </optgroup>
         <optgroup label="Meta / Llama">
-          <option value="meta-llama/llama-4-scout">Llama 4 Scout</option>
-          <option value="meta-llama/llama-4-maverick">Llama 4 Maverick</option>
+          <option value="meta-llama/llama-4-scout">Llama 4 Scout (Vision)</option>
+          <option value="meta-llama/llama-4-maverick">Llama 4 Maverick (Vision)</option>
           <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
         </optgroup>
         <optgroup label="Autres modeles">
@@ -230,11 +271,17 @@
     </div>
     
     <div class="model-info" id="modelInfo">
-      Modele selectionne: <strong>GPT-4.1 Nano</strong> - Rapide et efficace
+      Modele: <strong>GPT-4o - Dernier modele OpenAI multimodal avec Vision</strong>
+    </div>
+
+    <div class="image-section">
+      <label>URL de l'image (optionnel):</label>
+      <input type="url" id="imageUrl" placeholder="https://exemple.com/image.jpg" oninput="previewImage()">
+      <div class="image-preview" id="imagePreview"></div>
     </div>
     
     <div class="input-group">
-      <input type="text" id="prompt" placeholder="Entrez votre message..." value="Bonjour, qui es-tu?">
+      <input type="text" id="prompt" placeholder="Entrez votre message ou 'Decrivez cette image'..." value="Decrivez cette image en detail">
       <button id="sendBtn" onclick="sendMessage()">Envoyer</button>
     </div>
     
@@ -244,10 +291,12 @@
     
     <div class="api-info">
       <h3>Utilisation de l'API</h3>
-      <p>Endpoint GET (retourne JSON):</p>
+      <p>Endpoint GET - Texte seul:</p>
       <code>GET /puter?prompt=message&model=claude-sonnet-4</code>
+      <p style="margin-top: 15px;">Endpoint GET - Analyse d'image:</p>
+      <code>GET /puter?prompt=decrivez&model=gpt-4o&image_url=https://...&uid=123</code>
       <p style="margin-top: 15px; font-size: 14px;">
-        <strong>Modeles disponibles:</strong>
+        <strong>Modeles avec Vision:</strong>
       </p>
       <div class="models-grid">
         <span class="model-badge">GPT-4o</span>
@@ -266,21 +315,21 @@
   <script>
     const modelDescriptions = {
       'gpt-4.1-nano': 'GPT-4.1 Nano - Rapide et efficace pour les taches simples',
-      'gpt-4.1': 'GPT-4.1 - Modele OpenAI puissant',
+      'gpt-4.1': 'GPT-4.1 - Modele OpenAI puissant avec Vision',
       'gpt-4.1-mini': 'GPT-4.1 Mini - Equilibre vitesse/qualite',
-      'gpt-4o': 'GPT-4o - Dernier modele OpenAI multimodal',
-      'gpt-4o-mini': 'GPT-4o Mini - Version legere de GPT-4o',
+      'gpt-4o': 'GPT-4o - Dernier modele OpenAI multimodal avec Vision',
+      'gpt-4o-mini': 'GPT-4o Mini - Version legere avec Vision',
       'o3-mini': 'O3 Mini - Modele de raisonnement OpenAI',
       'o4-mini': 'O4 Mini - Nouveau modele de raisonnement',
-      'claude-sonnet-4': 'Claude Sonnet 4 - Excellent pour le code et l\'analyse',
-      'claude-sonnet-4-5': 'Claude Sonnet 4.5 - Version amelioree',
-      'claude-opus-4': 'Claude Opus 4 - Le plus puissant d\'Anthropic',
+      'claude-sonnet-4': 'Claude Sonnet 4 - Excellent pour le code et Vision',
+      'claude-sonnet-4-5': 'Claude Sonnet 4.5 - Version amelioree avec Vision',
+      'claude-opus-4': 'Claude Opus 4 - Le plus puissant avec Vision',
       'claude-haiku-4-5': 'Claude Haiku 4.5 - Tres rapide, ideal pour le chat',
-      'gemini-2.5-flash': 'Gemini 2.5 Flash - Rapide et multimodal',
-      'gemini-2.5-pro': 'Gemini 2.5 Pro - Version professionnelle Google',
-      'gemini-2.0-flash': 'Gemini 2.0 Flash - Generation precedente rapide',
-      'meta-llama/llama-4-scout': 'Llama 4 Scout - Nouveau modele Meta',
-      'meta-llama/llama-4-maverick': 'Llama 4 Maverick - Version avancee',
+      'gemini-2.5-flash': 'Gemini 2.5 Flash - Rapide et multimodal avec Vision',
+      'gemini-2.5-pro': 'Gemini 2.5 Pro - Version professionnelle avec Vision',
+      'gemini-2.0-flash': 'Gemini 2.0 Flash - Multimodal avec Vision',
+      'meta-llama/llama-4-scout': 'Llama 4 Scout - Nouveau modele Meta avec Vision',
+      'meta-llama/llama-4-maverick': 'Llama 4 Maverick - Version avancee avec Vision',
       'meta-llama/llama-3.3-70b-instruct': 'Llama 3.3 70B - Tres puissant open source',
       'grok-3': 'Grok 3 - Modele xAI avec humour',
       'grok-3-mini': 'Grok 3 Mini - Version legere de Grok',
@@ -297,6 +346,25 @@
       const model = select.value;
       const info = document.getElementById('modelInfo');
       info.innerHTML = 'Modele: <strong>' + (modelDescriptions[model] || model) + '</strong>';
+    }
+
+    function previewImage() {
+      const imageUrl = document.getElementById('imageUrl').value;
+      const previewDiv = document.getElementById('imagePreview');
+      
+      if (imageUrl) {
+        previewDiv.innerHTML = `
+          <img src="${imageUrl}" onerror="this.parentElement.innerHTML='<p style=\\'color:#dc3545;\\'>Image non trouvee</p>'" alt="Apercu">
+          <br><button class="clear-image-btn" onclick="clearImage()">Effacer l'image</button>
+        `;
+      } else {
+        previewDiv.innerHTML = '';
+      }
+    }
+
+    function clearImage() {
+      document.getElementById('imageUrl').value = '';
+      document.getElementById('imagePreview').innerHTML = '';
     }
 
     function filterModels(category) {
@@ -329,6 +397,7 @@
     async function sendMessage() {
       const prompt = document.getElementById('prompt').value;
       const model = document.getElementById('modelSelect').value;
+      const imageUrl = document.getElementById('imageUrl').value;
       const responseDiv = document.getElementById('response');
       const sendBtn = document.getElementById('sendBtn');
       
@@ -339,10 +408,22 @@
       
       sendBtn.disabled = true;
       responseDiv.className = 'response loading';
-      responseDiv.textContent = 'Chargement avec ' + model + '...';
+      
+      if (imageUrl) {
+        responseDiv.textContent = 'Analyse de l\'image avec ' + model + '...';
+      } else {
+        responseDiv.textContent = 'Chargement avec ' + model + '...';
+      }
       
       try {
-        const response = await puter.ai.chat(prompt, { model: model });
+        let response;
+        
+        if (imageUrl) {
+          response = await puter.ai.chat(prompt, imageUrl, { model: model });
+        } else {
+          response = await puter.ai.chat(prompt, { model: model });
+        }
+        
         responseDiv.className = 'response';
         
         if (typeof response === 'string') {
@@ -367,10 +448,15 @@
     const urlParams = new URLSearchParams(window.location.search);
     const promptParam = urlParams.get('prompt');
     const modelParam = urlParams.get('model');
+    const imageUrlParam = urlParams.get('image_url');
     
     if (modelParam) {
       document.getElementById('modelSelect').value = modelParam;
       updateModelInfo();
+    }
+    if (imageUrlParam) {
+      document.getElementById('imageUrl').value = imageUrlParam;
+      previewImage();
     }
     if (promptParam) {
       document.getElementById('prompt').value = promptParam;
