@@ -203,6 +203,62 @@ const uid = ${JSON.stringify(uid)};
   res.type('html').send(html);
 });
 
+const OPENROUTER_MODELS = [
+  "openrouter:shisa-ai/shisa-v2-llama3.3-70b",
+  "openrouter:shisa-ai/shisa-v2-llama3.3-70b:free",
+  "openrouter:sophosympatheia/midnight-rose-70b",
+  "openrouter:switchpoint/router",
+  "openrouter:tencent/hunyuan-a13b-instruct",
+  "openrouter:tencent/hunyuan-a13b-instruct:free",
+  "openrouter:thedrummer/anubis-70b-v1.1",
+  "openrouter:thedrummer/anubis-pro-105b-v1",
+  "openrouter:thedrummer/cydonia-24b-v4.1",
+  "openrouter:thedrummer/rocinante-12b",
+  "openrouter:thedrummer/skyfall-36b-v2",
+  "openrouter:thedrummer/unslopnemo-12b",
+  "openrouter:thenlper/gte-base",
+  "openrouter:thenlper/gte-large",
+  "openrouter:thudm/glm-4-32b",
+  "openrouter:thudm/glm-4.1v-9b-thinking",
+  "openrouter:thudm/glm-z1-32b",
+  "openrouter:tngtech/deepseek-r1t-chimera",
+  "openrouter:tngtech/deepseek-r1t-chimera:free",
+  "openrouter:tngtech/deepseek-r1t2-chimera:free",
+  "openrouter:tngtech/tng-r1t-chimera",
+  "openrouter:tngtech/tng-r1t-chimera:free",
+  "openrouter:undi95/remm-slerp-l2-13b",
+  "openrouter:x-ai/grok-2-1212",
+  "openrouter:x-ai/grok-2-vision-1212",
+  "openrouter:x-ai/grok-3",
+  "openrouter:x-ai/grok-3-beta",
+  "openrouter:x-ai/grok-3-mini",
+  "openrouter:x-ai/grok-3-mini-beta",
+  "openrouter:x-ai/grok-4",
+  "openrouter:x-ai/grok-4-fast:free",
+  "openrouter:x-ai/grok-4.1-fast:free",
+  "openrouter:x-ai/grok-code-fast-1",
+  "openrouter:x-ai/grok-vision-beta",
+  "openrouter:z-ai/glm-4-32b",
+  "openrouter:z-ai/glm-4.5",
+  "openrouter:z-ai/glm-4.5-air",
+  "openrouter:z-ai/glm-4.5-air:free",
+  "openrouter:z-ai/glm-4.5v",
+  "openrouter:z-ai/glm-4.6",
+  "openrouter:z-ai/glm-4.6:exacto"
+];
+
+app.get('/api/models', (req, res) => {
+  res.json({
+    success: true,
+    openrouter_models: OPENROUTER_MODELS,
+    chat_models: ['gpt-4o', 'gpt-4.1-nano', 'gpt-5-nano', 'claude-sonnet-4', 'gemini-2.5-flash'],
+    vision_models: ['gpt-4o', 'gpt-5-nano', 'gemini-2.5-flash', 'openrouter:x-ai/grok-2-vision-1212', 'openrouter:x-ai/grok-vision-beta', 'openrouter:thudm/glm-4.1v-9b-thinking', 'openrouter:z-ai/glm-4.5v'],
+    image_models: ['gpt-image-1', 'dall-e-3'],
+    total_models: OPENROUTER_MODELS.length + 5,
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
@@ -213,11 +269,13 @@ app.get('/api/status', (req, res) => {
       'GET /puter?prompt=...&model=...&image_url=URL': 'Analyse image - JSON',
       'GET /generate?prompt=...&model=gpt-image-1': 'Generation image',
       'GET /speech2speech?audio_url=...&voice=...': 'Speech to Speech',
+      'GET /api/models': 'Liste des modeles',
       'GET /api/status': 'Status API'
     },
-    chat_models: ['gpt-4o', 'gpt-4.1-nano', 'claude-sonnet-4', 'gemini-2.5-flash'],
-    vision_models: ['gpt-4o', 'claude-sonnet-4', 'gemini-2.5-flash', 'meta-llama/llama-4-scout'],
+    chat_models: ['gpt-4o', 'gpt-4.1-nano', 'gpt-5-nano', 'claude-sonnet-4', 'gemini-2.5-flash'],
+    vision_models: ['gpt-4o', 'gpt-5-nano', 'gemini-2.5-flash'],
     image_models: ['gpt-image-1', 'dall-e-3'],
+    openrouter_models_count: OPENROUTER_MODELS.length,
     speech2speech: {
       voices: {
         "21m00Tcm4TlvDq8ikWAM": "Rachel (default)",
