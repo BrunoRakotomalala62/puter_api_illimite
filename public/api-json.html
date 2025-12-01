@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Puter AI API - JSON</title>
+  <title>API Response</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 20px;
+      font-size: 14px;
+      background: #fff;
+      color: #000;
+      padding: 10px;
       white-space: pre-wrap;
       word-wrap: break-word;
     }
@@ -19,16 +20,15 @@
 <body><script src="https://js.puter.com/v2/"></script><script>
 const urlParams = new URLSearchParams(window.location.search);
 const prompt = urlParams.get('prompt') || 'Bonjour';
-const model = urlParams.get('model') || 'gpt-4.1-nano';
 const image_url = urlParams.get('image_url') || '';
 const uid = urlParams.get('uid') || '';
+const model = urlParams.get('model') || (image_url ? 'gpt-5-nano' : 'gpt-4.1-nano');
 
 (async function() {
   try {
     let response;
     
     if (image_url) {
-      // Format simplifie Puter.js: chat(prompt, imageUrl, options)
       response = await puter.ai.chat(prompt, image_url, { model: model });
     } else {
       response = await puter.ai.chat(prompt, { model: model });
@@ -70,7 +70,13 @@ const uid = urlParams.get('uid') || '';
     } else if (error && typeof error === 'string') {
       errorMsg = error;
     } else if (error && error.error) {
-      errorMsg = typeof error.error === 'string' ? error.error : JSON.stringify(error.error);
+      if (typeof error.error === 'string') {
+        errorMsg = error.error;
+      } else if (error.error.message) {
+        errorMsg = error.error.message;
+      } else {
+        errorMsg = JSON.stringify(error.error);
+      }
     } else if (error) {
       errorMsg = JSON.stringify(error);
     }

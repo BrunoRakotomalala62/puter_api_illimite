@@ -15,8 +15,8 @@ app.get('/', (req, res) => {
 
 app.get('/puter', (req, res) => {
   const prompt = req.query.prompt || 'Bonjour';
-  const model = req.query.model || 'gpt-4.1-nano';
   const image_url = req.query.image_url || '';
+  const model = req.query.model || (image_url ? 'gpt-5-nano' : 'gpt-4.1-nano');
   const uid = req.query.uid || '';
   
   let redirectUrl = `/api-json.html?prompt=${encodeURIComponent(prompt)}&model=${encodeURIComponent(model)}`;
