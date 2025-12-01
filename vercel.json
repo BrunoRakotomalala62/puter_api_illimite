@@ -16,6 +16,10 @@
       "dest": "/index.js"
     },
     {
+      "src": "/speech2speech",
+      "dest": "/index.js"
+    },
+    {
       "src": "/html",
       "dest": "/index.js"
     },

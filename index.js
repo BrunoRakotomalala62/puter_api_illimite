@@ -112,20 +112,122 @@ app.get('/html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'api.html'));
 });
 
+app.get('/speech2speech', (req, res) => {
+  const audio_url = req.query.audio_url || '';
+  const voice = req.query.voice || '21m00Tcm4TlvDq8ikWAM';
+  const model = req.query.model || 'eleven_multilingual_sts_v2';
+  const output_format = req.query.output_format || 'mp3_44100_128';
+  const remove_noise = req.query.remove_noise === 'true';
+  const uid = req.query.uid || '';
+  
+  if (!audio_url) {
+    res.type('html').send(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:10px;font-family:monospace;white-space:pre-wrap;">${JSON.stringify({
+      success: false,
+      error: "audio_url parameter is required",
+      usage: "/speech2speech?audio_url=URL&voice=VOICE_ID&model=MODEL&output_format=FORMAT",
+      voices: {
+        "21m00Tcm4TlvDq8ikWAM": "Rachel (default)",
+        "EXAVITQu4vr4xnSDxMaL": "Bella",
+        "ErXwobaYiN019PkySvjV": "Antoni",
+        "VR6AewLTigWG4xSOukaG": "Arnold"
+      },
+      models: ["eleven_multilingual_sts_v2", "eleven_english_sts_v2"],
+      timestamp: new Date().toISOString()
+    }, null, 2)}</body></html>`);
+    return;
+  }
+  
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Speech2Speech API</title></head>
+<body style="margin:0;padding:10px;font-family:monospace;white-space:pre-wrap;"><script src="https://js.puter.com/v2/"></script><script>
+const audio_url = ${JSON.stringify(audio_url)};
+const voice = ${JSON.stringify(voice)};
+const model = ${JSON.stringify(model)};
+const output_format = ${JSON.stringify(output_format)};
+const remove_noise = ${remove_noise};
+const uid = ${JSON.stringify(uid)};
+
+(async function() {
+  try {
+    const options = {
+      voice: voice,
+      model: model,
+      output_format: output_format,
+      removeBackgroundNoise: remove_noise
+    };
+    
+    const audio = await puter.ai.speech2speech(audio_url, options);
+    
+    const audioSrc = audio.src || audio.toString();
+    
+    const jsonData = {
+      success: true,
+      audio_url: audio_url,
+      voice: voice,
+      model: model,
+      output_format: output_format,
+      remove_noise: remove_noise,
+      uid: uid || null,
+      result_audio_url: audioSrc,
+      timestamp: new Date().toISOString()
+    };
+    document.body.textContent = JSON.stringify(jsonData, null, 2);
+  } catch (error) {
+    let errorMsg = 'Une erreur est survenue';
+    if (error && error.message) errorMsg = error.message;
+    else if (typeof error === 'string') errorMsg = error;
+    else if (error && error.error) {
+      if (typeof error.error === 'string') errorMsg = error.error;
+      else if (error.error.message) errorMsg = error.error.message;
+      else errorMsg = JSON.stringify(error.error);
+    } else if (error) errorMsg = JSON.stringify(error);
+    
+    const jsonData = {
+      success: false,
+      audio_url: audio_url,
+      voice: voice,
+      model: model,
+      uid: uid || null,
+      error: errorMsg,
+      timestamp: new Date().toISOString()
+    };
+    document.body.textContent = JSON.stringify(jsonData, null, 2);
+  }
+})();
+</script></body>
+</html>`;
+  
+  res.type('html').send(html);
+});
+
 app.get('/api/status', (req, res) => {
   res.json({
     status: 'online',
-    message: 'API Puter.js - Chat + Vision + Generation d\'images',
+    message: 'API Puter.js - Chat + Vision + Generation d\'images + Speech2Speech',
     endpoints: {
       'GET /': 'Interface complete',
       'GET /puter?prompt=...&model=...': 'Chat IA - JSON',
       'GET /puter?prompt=...&model=...&image_url=URL': 'Analyse image - JSON',
       'GET /generate?prompt=...&model=gpt-image-1': 'Generation image',
+      'GET /speech2speech?audio_url=...&voice=...': 'Speech to Speech',
       'GET /api/status': 'Status API'
     },
     chat_models: ['gpt-4o', 'gpt-4.1-nano', 'claude-sonnet-4', 'gemini-2.5-flash'],
     vision_models: ['gpt-4o', 'claude-sonnet-4', 'gemini-2.5-flash', 'meta-llama/llama-4-scout'],
     image_models: ['gpt-image-1', 'dall-e-3'],
+    speech2speech: {
+      voices: {
+        "21m00Tcm4TlvDq8ikWAM": "Rachel (default)",
+        "EXAVITQu4vr4xnSDxMaL": "Bella",
+        "ErXwobaYiN019PkySvjV": "Antoni",
+        "VR6AewLTigWG4xSOukaG": "Arnold"
+      },
+      models: ["eleven_multilingual_sts_v2", "eleven_english_sts_v2"],
+      output_formats: ["mp3_44100_128", "opus_48000_64", "pcm_48000"]
+    },
     timestamp: new Date().toISOString()
   });
 });
@@ -134,5 +236,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
   console.log(`Chat/Vision: GET /puter?prompt=...`);
   console.log(`Image Gen: GET /generate?prompt=...`);
+  console.log(`Speech2Speech: GET /speech2speech?audio_url=...`);
   console.log(`Status: GET /api/status`);
 });
