@@ -19,16 +19,79 @@ app.get('/puter', (req, res) => {
   const model = req.query.model || (image_url ? 'gpt-5-nano' : 'gpt-4.1-nano');
   const uid = req.query.uid || '';
   
-  let redirectUrl = `/api-json.html?prompt=${encodeURIComponent(prompt)}&model=${encodeURIComponent(model)}`;
-  
-  if (image_url) {
-    redirectUrl += `&image_url=${encodeURIComponent(image_url)}`;
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>API</title></head>
+<body style="margin:0;padding:10px;font-family:monospace;white-space:pre-wrap;"><script src="https://js.puter.com/v2/"></script><script>
+const prompt = ${JSON.stringify(prompt)};
+const model = ${JSON.stringify(model)};
+const image_url = ${JSON.stringify(image_url)};
+const uid = ${JSON.stringify(uid)};
+
+(async function() {
+  try {
+    let response;
+    if (image_url) {
+      response = await puter.ai.chat(prompt, image_url, { model: model });
+    } else {
+      response = await puter.ai.chat(prompt, { model: model });
+    }
+    
+    let responseText = '';
+    if (typeof response === 'string') {
+      responseText = response;
+    } else if (response.message && response.message.content) {
+      if (Array.isArray(response.message.content)) {
+        responseText = response.message.content.map(c => c.text || c).join('\\n');
+      } else {
+        responseText = response.message.content;
+      }
+    } else if (response.content) {
+      if (Array.isArray(response.content)) {
+        responseText = response.content.map(c => c.text || c).join('\\n');
+      } else {
+        responseText = response.content;
+      }
+    } else {
+      responseText = JSON.stringify(response);
+    }
+    
+    const jsonData = {
+      success: true,
+      model: model,
+      prompt: prompt,
+      image_url: image_url || null,
+      uid: uid || null,
+      response: responseText,
+      timestamp: new Date().toISOString()
+    };
+    document.body.textContent = JSON.stringify(jsonData, null, 2);
+  } catch (error) {
+    let errorMsg = 'Une erreur est survenue';
+    if (error && error.message) errorMsg = error.message;
+    else if (typeof error === 'string') errorMsg = error;
+    else if (error && error.error) {
+      if (typeof error.error === 'string') errorMsg = error.error;
+      else if (error.error.message) errorMsg = error.error.message;
+      else errorMsg = JSON.stringify(error.error);
+    } else if (error) errorMsg = JSON.stringify(error);
+    
+    const jsonData = {
+      success: false,
+      model: model,
+      prompt: prompt,
+      image_url: image_url || null,
+      uid: uid || null,
+      error: errorMsg,
+      timestamp: new Date().toISOString()
+    };
+    document.body.textContent = JSON.stringify(jsonData, null, 2);
   }
-  if (uid) {
-    redirectUrl += `&uid=${encodeURIComponent(uid)}`;
-  }
+})();
+</script></body>
+</html>`;
   
-  res.redirect(redirectUrl);
+  res.type('html').send(html);
 });
 
 app.get('/generate', (req, res) => {
